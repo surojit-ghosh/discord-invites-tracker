@@ -22,9 +22,9 @@ yarn add discord-invites-tracker
 ## Example
 
 ```js
-const Discord = require("discord.js");
-const client = new Discord.Client({
-    intents: [Discord.Intents.FLAGS.GUILDS],
+const { Client, Intents } = require("discord.js");
+const client = new Client({
+    intents: [Intents.FLAGS.GUILDS],
 });
 const invitesTracker = require("discord-invites-tracker");
 const tracker = new invitesTracker(client);
