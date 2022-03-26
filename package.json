@@ -3,7 +3,7 @@
   "description": "A simple library to track invites",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {},
   "author": "surojit#1781",
   "keywords": [
