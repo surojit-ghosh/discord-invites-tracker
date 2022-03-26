@@ -1,7 +1,20 @@
 {
   "name": "discord-invites-tracker",
+  "description": "A simple library to track invites",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
-  "dependencies": {}
+  "license": "ISC",
+  "dependencies": {},
+  "author": "surojit#1781",
+  "keywords": [
+    "discord invite tracker"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamsurojit/discord-invites-tracker.git"
+  },
+  "homepage": "https://github.com/iamsurojit/discord-invites-tracker#readme",
+  "bugs": {
+    "url": "https://github.com/iamsurojit/discord-invites-tracker/issues"
+  }
 }
