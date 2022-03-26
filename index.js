@@ -17,7 +17,7 @@ module.exports = class extends EventEmitter {
                 });
             });
         };
-        let invitesCount = {}; // { guildId: { userId: inviteCount , ... }, ... }
+        let invitesCount = {}; // { guildId: { userId: inviteCount , ... }, ... } 
 
         this.client.on('ready', async () => {
             client.guilds.cache.forEach(async (guild) => {
