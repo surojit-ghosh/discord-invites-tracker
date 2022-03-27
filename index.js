@@ -48,7 +48,7 @@ module.exports = class extends EventEmitter {
                     invitesCount[guild.id] = invitesAfter;
                     return this.emit('guildMemberAdd', member);
                 } else {
-                    return this.emit('guildMemberAdd', member);
+                    this.emit('guildMemberAdd', member);
                 };
             };
         });

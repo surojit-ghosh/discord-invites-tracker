@@ -1,13 +1,17 @@
 {
   "name": "discord-invites-tracker",
   "description": "A simple library to track invites",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {},
   "author": "surojit#1781",
   "keywords": [
-    "discord invite tracker"
+    "discord invite tracker",
+    "discord tracker",
+    "invite tracker",
+    "discord invites"
+
   ],
   "repository": {
     "type": "git",
