@@ -24,16 +24,31 @@ yarn add discord-invites-tracker
 ```js
 const { Client, Intents } = require("discord.js");
 const client = new Client({
-    intents: [Intents.FLAGS.GUILDS]
+    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_INVITES]
 });
 const invitesTracker = require("discord-invites-tracker");
-const tracker = new invitesTracker(client);
+const tracker = new invitesTracker(client, {
+    mongourl: 'YOUR MONGODB CONNECTION STRING' // optional
+});
+
+client.on('ready', () => {
+    console.log(`${client.user.username} is ready!`);
+});
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot || !message.guild || message.webhookId) return;
+
+    if (message.content.startsWith('!invites')) {
+        let invites = await invitesTracker.getInvites(message.author, message.guild);
+        message.reply(`${message.author} has ${invites} invites`);
+    };
+});
 
 tracker.on("guildMemberAdd", (member) => {
     const welcomeChannel = member.guild.channels.cache.get("YOUR WELCOME CHANNEL ID HERE");
 
     if (!member.inviter) return welcomeChannel.send(`I'm unable to track who invited ${member}`);
-    else return welcomeChannel.send(`Welcome ${member}! Invited by ${member.inviter}`);
+    else return welcomeChannel.send(`Welcome ${member}! Invited by ${member.inviter} (${member.invites} invites)`);
 });
 
 client.login("YOUR BOT TOKEN HERE");
