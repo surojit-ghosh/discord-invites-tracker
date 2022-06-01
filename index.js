@@ -27,7 +27,7 @@ module.exports = class extends EventEmitter {
                     let guildInviteCount = {};
                     invites.forEach((invite) => {
                         const { inviter, uses } = invite;
-                        guildInviteCount[inviter.id] = (guildInviteCount[inviter.id] || 0) + uses;
+                       if(inviter) guildInviteCount[inviter.id] = (guildInviteCount[inviter.id] || 0) + uses;
                     });
                     resolve(guildInviteCount);
                 });
