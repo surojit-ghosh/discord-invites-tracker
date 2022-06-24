@@ -84,8 +84,8 @@ module.exports = class extends EventEmitter {
             else return userData.invites;
         };
 
-        this.getAllInvites = async function(user, guild) {
-            if (!user || !guild) throw new Error('Please pass the user');
+        this.getAllInvites = async function(guild) {
+            if (!guild) throw new Error('Please pass the guild');
             const users = db.all().filter(element => element.startsWith(`invitestracker_${guild.id}`))
             if (!users || users.length == 0) return 0;
             let total = 0;
