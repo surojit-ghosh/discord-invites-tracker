@@ -1,18 +1,14 @@
 const { EventEmitter } = require('events');
-const db = require('quick.db');
+const { QuickDB } = require("quick.db");
+const db = new QuickDB();
+
 
 module.exports = class extends EventEmitter {
     constructor(client, options = {}) {
         super();
         if (!client) throw new Error('Pass the client in options.');
         this.client = client;
-
-        // this.model = connection.model('discord-invite-manager', new mongoose.Schema({
-        //     guildId: { type: String, required: true },
-        //     userId: { type: String, required: true },
-        //     invites: { type: Number, default: 0 },
-        //     invitedBy: { type: String }
-        // }));
+        
 
         const fetchInvites = async (guild) => {
             return await new Promise((resolve) => {
@@ -49,7 +45,7 @@ module.exports = class extends EventEmitter {
                     };
                     await db.set(`invitestracker_${guild.id}_${member.id}`, data);
                     const user = await client.users.fetch(inviter);
-                    member['inviter'] = user;
+                    member.inviter = user;
                     let getData = await new Promise(async (resolve) => {
                         let userData = await db.get(`invitestracker_${guild.id}_${inviter}`);
                         if (!userData) {
@@ -63,7 +59,7 @@ module.exports = class extends EventEmitter {
                         await db.set(`invitestracker_${guild.id}_${inviter}`, userData);
                         resolve(userData);
                     });
-                    member['invites'] = getData.invites;
+                    member.invites = getData.invites;
                     invitesCount[guild.id] = invitesAfter;
                     return this.emit('guildMemberAdd', member);
                 };
@@ -86,6 +82,17 @@ module.exports = class extends EventEmitter {
             let userData = await db.get(`invitestracker_${guild.id}_${user.id}`);
             if (!userData) return 0;
             else return userData.invites;
+        };
+
+        this.getAllInvites = async function(user, guild) {
+            if (!user || !guild) throw new Error('Please pass the user');
+            const users = db.all().filter(element => element.startsWith(`invitestracker_${guild.id}`))
+            if (!users || users.length == 0) return 0;
+            let total = 0;
+            for (const user of users) {
+                total += user.invites;
+            }
+            return total;
         };
     };
 
