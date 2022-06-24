@@ -86,12 +86,13 @@ module.exports = class extends EventEmitter {
             userData.save();
             data.delete();
         });
+        
+        this.getInvites = async function(user, guild) {
+            if (!user || !guild) throw new Error('Please pass the user');
+            let userData = await this.model?.findOne({ guildId: guild.id, userId: user.id });
+            if (!userData) return 0;
+            else return userData.invites;
+        };
     };
 
-    static async getInvites(user, guild) {
-        if (!user || !guild) throw new Error('Please pass the user');
-        let userData = await this.model.findOne({ guildId: guild.id, userId: user.id });
-        if (!userData) return 0;
-        else return userData.invites;
-    };
 };
