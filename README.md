@@ -14,9 +14,9 @@ discord-invites-tracker is a simple [Node.js](https://nodejs.org) module that al
 ## Installation
 
 ```sh
-npm install discord-invites-tracker
+npm install Alexmdz77/discord-invites-tracker-sqlite
 # or
-yarn add discord-invites-tracker
+yarn add Alexmdz77/discord-invites-tracker-sqlite
 ```
 
 ## Example
@@ -26,10 +26,8 @@ const { Client, Intents } = require("discord.js");
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_INVITES]
 });
-const invitesTracker = require("discord-invites-tracker");
-const tracker = new invitesTracker(client, {
-    mongourl: 'YOUR MONGODB CONNECTION STRING' // optional
-});
+
+const tracker = new invitesTracker(client);
 
 client.on('ready', () => {
     console.log(`${client.user.username} is ready!`);
@@ -53,6 +51,3 @@ tracker.on("guildMemberAdd", (member) => {
 
 client.login("YOUR BOT TOKEN HERE");
 ```
-
-## Help
-Join my [discord server](https://discord.gg/4JVfk6uKCk) for support regarding this module

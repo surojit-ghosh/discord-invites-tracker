@@ -1,25 +1,14 @@
 const { EventEmitter } = require('events');
-const mongoose = require('mongoose');
+
+const Keyv = require('keyv');
+const keyv = new Keyv('sqlite://database.sqlite');
 
 module.exports = class extends EventEmitter {
     constructor(client, options = {}) {
         super();
         if (!client) throw new Error('Pass the client in options.');
         this.client = client;
-        let mongourl = options.mongourl;
-
-        let connection;
-        if (mongourl) connection = mongoose.createConnection(mongourl, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-
-        this.model = connection.model('discord-invite-manager', new mongoose.Schema({
-            guildId: { type: String, required: true },
-            userId: { type: String, required: true },
-            invites: { type: Number, default: 0 },
-            invitedBy: { type: String }
-        }));
+        
 
         const fetchInvites = async (guild) => {
             return await new Promise((resolve) => {
@@ -33,7 +22,7 @@ module.exports = class extends EventEmitter {
                 });
             });
         };
-        let invitesCount = {}; // { guildId: { userId: inviteCount , ... }, ... }
+        let invitesCount = {};
 
         this.client.on('ready', async () => {
             client.guilds.cache.forEach(async (guild) => {
@@ -49,27 +38,28 @@ module.exports = class extends EventEmitter {
 
             for (const inviter in invitesAfter) {
                 if (invitesAfter[inviter] - invitesBefore[inviter] === 1) {
-                    let data = new this.model();
-                    data.guildId = guild.id;
-                    data.userId = member.id;
-                    data.invitedBy = inviter;
-                    data.save();
+                    let data = {
+                        guildId: guild.id,
+                        userId: member.id,
+                        invitedBy: inviter
+                    };
+                    await keyv.set(`invitestracker_${guild.id}_${member.id}`, data);
                     const user = await client.users.fetch(inviter);
-                    member['inviter'] = user;
-                    if (connection) {
-                        let getData = await new Promise(async (resolve) => {
-                            let userData = await this.model.findOne({ guildId: guild.id, userId: inviter });
-                            if (!userData) {
-                                userData = new this.model();
-                                userData['guildId'] = guild.id;
-                                userData['userId'] = inviter;
+                    member.inviter = user;
+                    let getData = await new Promise(async (resolve) => {
+                        let userData = await keyv.get(`invitestracker_${guild.id}_${inviter}`);
+                        if (!userData) {
+                            userData = {
+                                guildId: guild.id,
+                                userId: inviter,
+                                invites: 0
                             };
-                            userData['invites']++;
-                            userData.save();
-                            resolve(userData);
-                        });
-                        member['invites'] = getData.invites;
-                    }
+                        };
+                        userData.invites++;
+                        await keyv.set(`invitestracker_${guild.id}_${inviter}`, userData);
+                        resolve(userData);
+                    });
+                    member.invites = getData.invites;
                     invitesCount[guild.id] = invitesAfter;
                     return this.emit('guildMemberAdd', member);
                 };
@@ -79,19 +69,31 @@ module.exports = class extends EventEmitter {
 
         this.client.on('guildMemberRemove', async (member) => {
             const { guild } = member;
-            let data = await this.model.findOne({ guildId: guild.id, userId: member.id });
+            let data = await keyv.get(`invitestracker_${guild.id}_${member.id}`);
             if (!data) return;
-            let userData = await this.model.findOne({ guildId: guild.id, userId: data.invitedBy });
-            userData.invites--;
-            userData.save();
-            data.delete();
+            let userData = await keyv.get(`invitestracker_${guild.id}_${data.invitedBy}`);
+            userData ? userData.invites-- : userData = {guildId: guild.id, userId: data.invitedBy, invites: 0};
+            await keyv.set(`invitestracker_${guild.id}_${data.invitedBy}`, userData);
+            keyv.delete(`invitestracker_${guild.id}_${member.id}`);
         });
+        
+        this.getInvites = async function(user, guild) {
+            if (!user || !guild) throw new Error('Please pass the user');
+            let userData = await keyv.get(`invitestracker_${guild.id}_${user.id}`);
+            if (!userData) return 0;
+            else return userData.invites;
+        };
+
+        this.getAllInvites = async function(guild) {
+            if (!guild) throw new Error('Please pass the guild');
+            const users = keyv.all().filter(element => element.startsWith(`invitestracker_${guild.id}`))
+            if (!users || users.length == 0) return 0;
+            let total = 0;
+            for (const user of users) {
+                total += user.invites;
+            }
+            return total;
+        };
     };
 
-    static async getInvites(user, guild) {
-        if (!user || !guild) throw new Error('Please pass the user');
-        let userData = await this.model.findOne({ guildId: guild.id, userId: user.id });
-        if (!userData) return 0;
-        else return userData.invites;
-    };
 };
